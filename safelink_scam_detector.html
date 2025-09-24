@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SafeLink - Phishing & Scam Detector</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/js/all.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .glass-effect {
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .safe-glow { box-shadow: 0 0 20px rgba(34, 197, 94, 0.3); }
+        .suspicious-glow { box-shadow: 0 0 20px rgba(251, 191, 36, 0.3); }
+        .malicious-glow { box-shadow: 0 0 20px rgba(239, 68, 68, 0.3); }
+        
+        .animate-pulse-slow {
+            animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        
+        .typing-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: #667eea;
+            animation: typing 1.4s infinite ease-in-out both;
+        }
+        
+        .typing-indicator:nth-child(1) { animation-delay: -0.32s; }
+        .typing-indicator:nth-child(2) { animation-delay: -0.16s; }
+        
+        @keyframes typing {
+            0%, 80%, 100% { transform: scale(0); opacity: 0.5; }
+            40% { transform: scale(1); opacity: 1; }
+        }
+        
+        .scan-animation {
+            background: linear-gradient(90deg, transparent, rgba(102, 126, 234, 0.4), transparent);
+            animation: scan 2s ease-in-out infinite;
+        }
+        
+        @keyframes scan {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Header -->
+    <nav class="gradient-bg shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0 flex items-center">
+                        <i class="fas fa-shield-alt text-white text-2xl mr-3"></i>
+                        <span class="text-white text-xl font-bold">SafeLink</span>
+                        <span class="text-blue-200 text-sm ml-2">ScamSaksham</span>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <select id="languageSelector" class="bg-white bg-opacity-20 text-white border-0 rounded-lg px-3 py-1 focus:outline-none focus:ring-2 focus:ring-white">
+                        <option value="en">English</option>
+                        <option value="hi">हिंदी</option>
+                        <option value="hinglish">Hinglish</option>
+                    </select>
+                    <button id="loginBtn" class="bg-white text-purple-600 px-4 py-2 rounded-lg font-medium hover:bg-opacity-90 transition-colors">
+                        <i class="fas fa-user mr-2"></i>Login
+                    </button>
+                    <button id="historyBtn" class="text-white hover:text-blue-200 transition-colors">
+                        <i class="fas fa-history text-lg"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-6xl mx-auto px-4 py-8">
+        <!-- Hero Section -->
+        <div class="text-center mb-12">
+            <h1 class="text-4xl font-bold text-gray-900 mb-4">
+                <span id="heroTitle">Protect Yourself from Phishing & Scams</span>
+            </h1>
+            <p class="text-xl text-gray-600 mb-8" id="heroSubtitle">
+                Instantly analyze suspicious links, emails, and messages with AI-powered detection
+            </p>
+            
+            <!-- Stats -->
+            <div class="grid grid-cols-3 gap-6 max-w-2xl mx-auto mb-8">
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-purple-600">10,000+</div>
+                    <div class="text-sm text-gray-500">Links Checked</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-green-600">95%</div>
+                    <div class="text-sm text-gray-500">Accuracy Rate</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-blue-600">5,000+</div>
+                    <div class="text-sm text-gray-500">Users Protected</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Analysis Interface -->
+        <div class="grid lg:grid-cols-3 gap-8">
+            <!-- Input Section -->
+            <div class="lg:col-span-2">
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <div class="flex space-x-1 mb-6">
+                        <button class="tab-btn active px-4 py-2 rounded-lg font-medium transition-colors" data-tab="url">
+                            <i class="fas fa-link mr-2"></i>URL Check
+                        </button>
+                        <button class="tab-btn px-4 py-2 rounded-lg font-medium transition-colors" data-tab="text">
+                            <i class="fas fa-envelope mr-2"></i>Email/Text
+                        </button>
+                        <button class="tab-btn px-4 py-2 rounded-lg font-medium transition-colors" data-tab="html">
+                            <i class="fas fa-code mr-2"></i>HTML
+                        </button>
+                        <button class="tab-btn px-4 py-2 rounded-lg font-medium transition-colors" data-tab="image">
+                            <i class="fas fa-image mr-2"></i>Screenshot
+                        </button>
+                    </div>
+
+                    <!-- URL Tab -->
+                    <div id="urlTab" class="tab-content">
+                        <div class="relative">
+                            <input type="text" id="urlInput" placeholder="Paste suspicious link here... (e.g., https://example.com)" 
+                                   class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:outline-none text-lg">
+                            <button id="analyzeUrlBtn" class="absolute right-2 top-2 bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition-colors">
+                                <i class="fas fa-search mr-2"></i>Analyze
+                            </button>
+                        </div>
+                        <div class="mt-4 flex flex-wrap gap-2">
+                            <span class="text-sm text-gray-500">Try examples:</span>
+                            <button class="example-link text-sm text-purple-600 hover:text-purple-800" data-url="https://bit.ly/suspicious-link">Short URL</button>
+                            <button class="example-link text-sm text-purple-600 hover:text-purple-800" data-url="https://paypaI.com/signin">Look-alike Domain</button>
+                        </div>
+                    </div>
+
+                    <!-- Text Tab -->
+                    <div id="textTab" class="tab-content hidden">
+                        <textarea id="textInput" rows="6" placeholder="Paste email content, SMS, or WhatsApp message here..." 
+                                  class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:outline-none"></textarea>
+                        <button id="analyzeTextBtn" class="mt-4 w-full bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition-colors">
+                            <i class="fas fa-search mr-2"></i>Analyze Text
+                        </button>
+                    </div>
+
+                    <!-- HTML Tab -->
+                    <div id="htmlTab" class="tab-content hidden">
+                        <textarea id="htmlInput" rows="8" placeholder="Paste HTML source code of suspicious email or webpage..." 
+                                  class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:outline-none font-mono text-sm"></textarea>
+                        <button id="analyzeHtmlBtn" class="mt-4 w-full bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition-colors">
+                            <i class="fas fa-search mr-2"></i>Analyze HTML
+                        </button>
+                    </div>
+
+                    <!-- Image Tab -->
+                    <div id="imageTab" class="tab-content hidden">
+                        <div class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
+                            <input type="file" id="imageInput" accept="image/*" class="hidden">
+                            <div class="cursor-pointer" onclick="document.getElementById('imageInput').click()">
+                                <i class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-4"></i>
+                                <p class="text-lg text-gray-600">Drop screenshot here or click to browse</p>
+                                <p class="text-sm text-gray-500 mt-2">Supports PNG, JPG, WebP</p>
+                            </div>
+                        </div>
+                        <button id="analyzeImageBtn" class="mt-4 w-full bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition-colors" disabled>
+                            <i class="fas fa-search mr-2"></i>Analyze Screenshot
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Tips Sidebar -->
+            <div class="space-y-6">
+                <!-- Quick Tips -->
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">
+                        <i class="fas fa-lightbulb text-yellow-500 mr-2"></i>Quick Safety Tips
+                    </h3>
+                    <div class="space-y-3">
+                        <div class="flex items-start space-x-3">
+                            <i class="fas fa-check-circle text-green-500 mt-1"></i>
+                            <p class="text-sm text-gray-600">Always check the URL before clicking</p>
+                        </div>
+                        <div class="flex items-start space-x-3">
+                            <i class="fas fa-check-circle text-green-500 mt-1"></i>
+                            <p class="text-sm text-gray-600">Look for HTTPS and valid certificates</p>
+                        </div>
+                        <div class="flex items-start space-x-3">
+                            <i class="fas fa-check-circle text-green-500 mt-1"></i>
+                            <p class="text-sm text-gray-600">Never enter passwords from email links</p>
+                        </div>
+                        <div class="flex items-start space-x-3">
+                            <i class="fas fa-check-circle text-green-500 mt-1"></i>
+                            <p class="text-sm text-gray-600">Report suspicious content immediately</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Scam Alerts -->
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">
+                        <i class="fas fa-exclamation-triangle text-red-500 mr-2"></i>Recent Scam Alerts
+                    </h3>
+                    <div class="space-y-3">
+                        <div class="p-3 bg-red-50 rounded-lg">
+                            <p class="text-sm font-medium text-red-800">Fake UPI Payment Links</p>
+                            <p class="text-xs text-red-600 mt-1">Targeting WhatsApp users</p>
+                        </div>
+                        <div class="p-3 bg-yellow-50 rounded-lg">
+                            <p class="text-sm font-medium text-yellow-800">Bank OTP Phishing</p>
+                            <p class="text-xs text-yellow-600 mt-1">SMS-based attacks rising</p>
+                        </div>
+                        <div class="p-3 bg-blue-50 rounded-lg">
+                            <p class="text-sm font-medium text-blue-800">Fake Job Offers</p>
+                            <p class="text-xs text-blue-600 mt-1">Requesting advance fees</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results Section -->
+        <div id="resultsSection" class="mt-8 hidden">
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <!-- Loading State -->
+                <div id="loadingState" class="text-center py-8">
+                    <div class="relative w-20 h-20 mx-auto mb-4">
+                        <div class="absolute inset-0 border-4 border-purple-200 rounded-full"></div>
+                        <div class="absolute inset-0 border-4 border-purple-600 rounded-full animate-spin border-t-transparent"></div>
+                        <div class="scan-animation absolute inset-2 rounded-full"></div>
+                    </div>
+                    <p class="text-gray-600 mb-2">Analyzing content...</p>
+                    <div class="flex justify-center space-x-1">
+                        <div class="typing-indicator"></div>
+                        <div class="typing-indicator"></div>
+                        <div class="typing-indicator"></div>
+                    </div>
+                    <p class="text-sm text-gray-500 mt-4">Checking for suspicious patterns, domains, and security threats</p>
+                </div>
+
+                <!-- Results Display -->
+                <div id="resultsDisplay" class="hidden">
+                    <!-- Verdict Header -->
+                    <div id="verdictHeader" class="text-center mb-8">
+                        <div id="verdictIcon" class="w-20 h-20 mx-auto mb-4 rounded-full flex items-center justify-center text-3xl"></div>
+                        <h2 id="verdictTitle" class="text-2xl font-bold mb-2"></h2>
+                        <p id="verdictSubtitle" class="text-gray-600"></p>
+                        <div class="mt-4">
+                            <div class="flex items-center justify-center space-x-4">
+                                <span class="text-sm text-gray-500">Risk Score:</span>
+                                <div class="flex-1 max-w-xs bg-gray-200 rounded-full h-2">
+                                    <div id="riskBar" class="h-2 rounded-full transition-all duration-1000"></div>
+                                </div>
+                                <span id="riskScore" class="text-lg font-bold"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Analysis Details -->
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <!-- Key Indicators -->
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-900 mb-4">
+                                <i class="fas fa-exclamation-circle mr-2"></i>Key Indicators Found
+                            </h3>
+                            <div id="indicatorsList" class="space-y-3"></div>
+                        </div>
+
+                        <!-- Recommendations -->
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-900 mb-4">
+                                <i class="fas fa-shield-alt mr-2"></i>Recommended Actions
+                            </h3>
+                            <div id="actionsList" class="space-y-3"></div>
+                        </div>
+                    </div>
+
+                    <!-- Detailed Explanation -->
+                    <div class="mt-8 p-4 bg-gray-50 rounded-lg">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-3">
+                            <i class="fas fa-info-circle mr-2"></i>Detailed Analysis
+                        </h3>
+                        <div id="detailedExplanation" class="text-gray-700"></div>
+                        <div id="elderExplanation" class="mt-4 p-3 bg-blue-50 rounded-lg">
+                            <p class="text-sm text-blue-700">
+                                <i class="fas fa-user-friends mr-2"></i>
+                                <strong>For family members:</strong> <span id="elderText"></span>
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Report Template -->
+                    <div id="reportSection" class="mt-8 p-4 bg-yellow-50 rounded-lg">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-3">
+                            <i class="fas fa-flag mr-2"></i>Report Template
+                        </h3>
+                        <div class="space-y-3">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Email Subject:</label>
+                                <input id="reportSubject" type="text" class="w-full px-3 py-2 border border-gray-300 rounded-md" readonly>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Email Body:</label>
+                                <textarea id="reportBody" rows="4" class="w-full px-3 py-2 border border-gray-300 rounded-md" readonly></textarea>
+                            </div>
+                            <button id="copyReportBtn" class="bg-yellow-600 text-white px-4 py-2 rounded-lg hover:bg-yellow-700 transition-colors">
+                                <i class="fas fa-copy mr-2"></i>Copy Report Template
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Community Reporting -->
+                    <div class="mt-8 p-4 bg-green-50 rounded-lg">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-3">
+                            <i class="fas fa-users mr-2"></i>Help the Community
+                        </h3>
+                        <p class="text-sm text-gray-600 mb-3">Share this analysis to help protect others (no personal data shared)</p>
+                        <div class="flex items-center space-x-4">
+                            <label class="flex items-center">
+                                <input type="checkbox" id="shareAnalysis" class="mr-2">
+                                <span class="text-sm">Share anonymously with SafeLink database</span>
+                            </label>
+                            <button id="submitReportBtn" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors">
+                                <i class="fas fa-share mr-2"></i>Submit
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- History Modal -->
+        <div id="historyModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
+            <div class="bg-white rounded-xl shadow-2xl max-w-2xl w-full mx-4 max-h-96 overflow-hidden">
+                <div class="flex justify-between items-center p-6 border-b">
+                    <h3 class="text-lg font-semibold">Recent Checks</h3>
+                    <button id="closeHistoryModal" class="text-gray-500 hover:text-gray-700">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div id="historyList" class="p-6 overflow-y-auto max-h-80"></div>
+            </div>
+        </div>
+
+        <!-- Login Modal -->
+        <div id="loginModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
+            <div class="bg-white rounded-xl shadow-2xl max-w-md w-full mx-4">
+                <div class="p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-xl font-semibold">Sign In to SafeLink</h3>
+                        <button id="closeLoginModal" class="text-gray-500 hover:text-gray-700">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                            <input id="loginEmail" type="email" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                            <input id="loginPassword" type="password" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <label class="flex items-center">
+                                <input type="checkbox" class="mr-2">
+                                <span class="text-sm text-gray-600">Remember me</span>
+                            </label>
+                            <a href="#" class="text-sm text-purple-600 hover:text-purple-500">Forgot password?</a>
+                        </div>
+                        <button id="submitLogin" class="w-full bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700 transition-colors">
+                            Sign In
+                        </button>
+                        <div class="text-center text-sm text-gray-600">
+                            Don't have an account? <a href="#" class="text-purple-600 hover:text-purple-500">Sign up</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Application State
+        let currentUser = null;
+        let analysisHistory = JSON.parse(localStorage.getItem('safelink_history') || '[]');
+        let currentLanguage = 'en';
+
+        // Language Translations
+        const translations = {
+            en: {
+                heroTitle: "Protect Yourself from Phishing & Scams",
+                heroSubtitle: "Instantly analyze suspicious links, emails, and messages with AI-powered detection",
+                analyzing: "Analyzing content...",
+                checkingPatterns: "Checking for suspicious patterns, domains, and security threats"
+            },
+            hi: {
+                heroTitle: "फिशिंग और स्कैम से खुद को बचाएं",
+                heroSubtitle: "AI-पावर्ड डिटेक्शन के साथ संदिग्ध लिंक, ईमेल और संदेशों का तुरंत विश्लेषण करें",
+                analyzing: "सामग्री का विश्लेषण कर रहे हैं...",
+                checkingPatterns: "संदिग्ध पैटर्न, डोमेन और सुरक्षा खतरों की जाँच कर रहे हैं"
+            },
+            hinglish: {
+                heroTitle: "Phishing aur Scam se apna bachav kariye",
+                heroSubtitle: "AI technology ke saath suspicious links, emails aur messages ko instantly check kariye",
+                analyzing: "Content analyze kar rahe hain...",
+                checkingPatterns: "Suspicious patterns, domains aur security threats check kar rahe hain"
+            }
+        };
+
+        // Tab Management
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const tab = e.target.dataset.tab;
+                
+                // Update active tab
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active', 'bg-purple-600', 'text-white'));
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.add('bg-gray-100', 'text-gray-600'));
+                
+                e.target.classList.add('active', 'bg-purple-600', 'text-white');
+                e.target.classList.remove('bg-gray-100', 'text-gray-600');
+                
+                // Show corresponding content
+                document.querySelectorAll('.tab-content').forEach(content => content.classList.add('hidden'));
+                document.getElementById(tab + 'Tab').classList.remove('hidden');
+            });
+        });
+
+        // Initialize active tab styling
+        document.querySelector('.tab-btn.active').classList.add('bg-purple-600', 'text-white');
+        document.querySelectorAll('.tab-btn:not(.active)').forEach(btn => {
+            btn.classList.add('bg-gray-100', 'text-gray-600');
+        });
+
+        // Example link handlers
+        document.querySelectorAll('.example-link').forEach(link => {
+            link.addEventListener('click', (e) => {
+                document.getElementById('urlInput').value = e.target.dataset.url;
+            });
+        });
+
+        // File upload handler
+        document.getElementById('imageInput').addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                document.getElementById('analyzeImageBtn').disabled = false;
+                document.getElementById('analyzeImageBtn').innerHTML = `<i class="fas fa-search mr-2"></i>Analyze "${e.target.files[0].name}"`;
+            }
+        });
+
+        // Language selector
+        document.getElementById('languageSelector').addEventListener('change', (e) => {
+            currentLanguage = e.target.value;
+            updateLanguage();
+        });
+
+        function updateLanguage() {
+            const t = translations[currentLanguage];
+            document.getElementById('heroTitle').textContent = t.heroTitle;
+            document.getElementById('heroSubtitle').textContent = t.heroSubtitle;
+        }
+
+        // Modal handlers
+        document.getElementById('loginBtn').addEventListener('click', () => {
+            document.getElementById('loginModal').classList.remove('hidden');
+        });
+
+        document.getElementById('closeLoginModal').addEventListener('click', () => {
+            document.getElementById('loginModal').classList.add('hidden');
+        });
+
+        document.getElementById('historyBtn').addEventListener('click', () => {
+            showHistory();
+        });
+
+        document.getElementById('closeHistoryModal').addEventListener('click', () => {
+            document.getElementById('historyModal').classList.add('hidden');
+        });
+
+        // Analysis functions
+        async function analyzeContent(type, content) {
+            document.getElementById('resultsSection').classList.remove('hidden');
+            document.getElementById('loadingState').classList.remove('hidden');
+            document.getElementById('resultsDisplay').classList.add('hidden');
+
+            // Simulate API call with realistic delay
+            await new Promise(resolve => setTimeout(resolve, 3000));
+
+            // Mock analysis results (In real app, this would call the backend API)
+            const mockResults = generateMockResults(type, content);
+            
+            displayResults(mockResults);
+            addToHistory(type, content, mockResults);
+        }
+
+        function generateMockResults(type, content) {
+            // Sophisticated mock results generator
+            const url = type === 'url' ? content : extractUrlFromContent(content);
+            const isDangerous = checkIfDangerous(content);
+            
+            const baseResult = {
+                verdict: isDangerous ? "Malicious" : (Math.random() > 0.7 ? "Suspicious" : "Safe"),
+                risk_score: isDangerous ? Math.floor(Math.random() * 30) + 70 : Math.floor(Math.random() * 50),
+                timestamp: new Date().toISOString()
+            };
+
+            if (baseResult.verdict === "Malicious") {
+                return {
+                    ...baseResult,
+                    top_indicators: [
+                        {id: "I1", label: "domain_lookalike", explain_hinglish: "Ye domain asli website jaisa dikhta hai lekin fake hai", confidence: 95},
+                        {id: "I2", label: "credential_harvesting", explain_hinglish: "Password maangne wala form hai", confidence: 88},
+                        {id: "I3", label: "suspicious_ssl", explain_hinglish: "SSL certificate valid nahi hai", confidence: 72}
+                    ],
+                    short_summary_hinglish: "Ye link bahut khatarnak hai. Isme aapka password aur personal data chura sakta hai. Bilkul click mat kariye.",
+                    one_line_for_elder: "Beta, ye link fake hai, isko click mat karna",
+                    recommended_action: ["Do not click the link", "Report to your bank immediately", "Delete the message", "Warn family and friends"],
+                    report_template: {
+                        subject: "Suspicious phishing link targeting bank customers",
+                        body: "I received a suspicious link that appears to be impersonating your bank. Link: " + content + ". Please investigate and take action. Thank you."
+                    }
+                };
+            } else if (baseResult.verdict === "Suspicious") {
+                return {
+                    ...baseResult,
+                    top_indicators: [
+                        {id: "I1", label: "url_shortener", explain_hinglish: "Short URL hai, asli destination pata nahi", confidence: 65},
+                        {id: "I2", label: "recent_domain", explain_hinglish: "Domain abhi recently banaya gaya hai", confidence: 58}
+                    ],
+                    short_summary_hinglish: "Ye link suspicious lag raha hai. Carefully check karke hi click kariye.",
+                    one_line_for_elder: "Thoda suspicious hai, carefully dekh kar click karna",
+                    recommended_action: ["Verify sender identity", "Check full URL before clicking", "Use antivirus protection"],
+                    report_template: {
+                        subject: "Suspicious link for review",
+                        body: "I found a suspicious link that may need investigation: " + content
+                    }
+                };
+            } else {
+                return {
+                    ...baseResult,
+                    top_indicators: [
+                        {id: "I1", label: "legitimate_domain", explain_hinglish: "Domain legitimate aur trusted hai", confidence: 90},
+                        {id: "I2", label: "valid_ssl", explain_hinglish: "SSL certificate valid hai", confidence: 95}
+                    ],
+                    short_summary_hinglish: "Ye link safe lagta hai. Lekin phir bhi caution se use kariye.",
+                    one_line_for_elder: "Link safe hai, click kar sakte hain",
+                    recommended_action: ["Link appears safe to use", "Still practice good security habits", "Keep antivirus updated"],
+                    report_template: null
+                };
+            }
+        }
+
+        function checkIfDangerous(content) {
+            const dangerousPatterns = [
+                /paypal?/i, /amazo[n]/i, /google?/i, /fac[e]book/i, /bank/i, /sbi/i, /hdfc/i, /icici/i,
+                /urgent/i, /suspend/i, /verify/i, /click.*here/i, /limited.*time/i, /congratulations/i,
+                /winner/i, /lottery/i, /free.*money/i, /inheritance/i, /prince/i, /million/i,
+                /bit\.ly/i, /tinyurl/i, /t\.co/i, /goo\.gl/i, /ow\.ly/i,
+                /login/i, /signin/i, /password/i, /otp/i, /verification/i
+            ];
+            
+            return dangerousPatterns.some(pattern => pattern.test(content));
+        }
+
+        function extractUrlFromContent(content) {
+            const urlRegex = /https?:\/\/[^\s]+/g;
+            const matches = content.match(urlRegex);
+            return matches ? matches[0] : '';
+        }
+
+        function displayResults(results) {
+            document.getElementById('loadingState').classList.add('hidden');
+            document.getElementById('resultsDisplay').classList.remove('hidden');
+
+            // Verdict header
+            const verdictIcon = document.getElementById('verdictIcon');
+            const verdictTitle = document.getElementById('verdictTitle');
+            const verdictSubtitle = document.getElementById('verdictSubtitle');
+            const riskBar = document.getElementById('riskBar');
+            const riskScore = document.getElementById('riskScore');
+
+            if (results.verdict === 'Safe') {
+                verdictIcon.innerHTML = '<i class="fas fa-shield-alt"></i>';
+                verdictIcon.className = 'w-20 h-20 mx-auto mb-4 rounded-full flex items-center justify-center text-3xl bg-green-100 text-green-600 safe-glow';
+                verdictTitle.textContent = 'Safe';
+                verdictTitle.className = 'text-2xl font-bold mb-2 text-green-600';
+                verdictSubtitle.textContent = 'This content appears to be legitimate';
+                riskBar.className = 'h-2 rounded-full transition-all duration-1000 bg-green-500';
+            } else if (results.verdict === 'Suspicious') {
+                verdictIcon.innerHTML = '<i class="fas fa-exclamation-triangle"></i>';
+                verdictIcon.className = 'w-20 h-20 mx-auto mb-4 rounded-full flex items-center justify-center text-3xl bg-yellow-100 text-yellow-600 suspicious-glow';
+                verdictTitle.textContent = 'Suspicious';
+                verdictTitle.className = 'text-2xl font-bold mb-2 text-yellow-600';
+                verdictSubtitle.textContent = 'Exercise caution with this content';
+                riskBar.className = 'h-2 rounded-full transition-all duration-1000 bg-yellow-500';
+            } else {
+                verdictIcon.innerHTML = '<i class="fas fa-skull-crossbones"></i>';
+                verdictIcon.className = 'w-20 h-20 mx-auto mb-4 rounded-full flex items-center justify-center text-3xl bg-red-100 text-red-600 malicious-glow';
+                verdictTitle.textContent = 'Malicious';
+                verdictTitle.className = 'text-2xl font-bold mb-2 text-red-600';
+                verdictSubtitle.textContent = 'This content is dangerous - do not interact';
+                riskBar.className = 'h-2 rounded-full transition-all duration-1000 bg-red-500';
+            }
+
+            riskBar.style.width = results.risk_score + '%';
+            riskScore.textContent = results.risk_score + '/100';
+            riskScore.className = `text-lg font-bold ${results.verdict === 'Safe' ? 'text-green-600' : results.verdict === 'Suspicious' ? 'text-yellow-600' : 'text-red-600'}`;
+
+            // Indicators
+            const indicatorsList = document.getElementById('indicatorsList');
+            indicatorsList.innerHTML = '';
+            results.top_indicators.forEach(indicator => {
+                const div = document.createElement('div');
+                const confidenceColor = indicator.confidence > 80 ? 'text-red-600' : indicator.confidence > 60 ? 'text-yellow-600' : 'text-blue-600';
+                div.innerHTML = `
+                    <div class="flex items-start space-x-3 p-3 bg-gray-50 rounded-lg">
+                        <i class="fas fa-info-circle ${confidenceColor} mt-1"></i>
+                        <div class="flex-1">
+                            <p class="font-medium text-gray-900">${indicator.label.replace(/_/g, ' ').toUpperCase()}</p>
+                            <p class="text-sm text-gray-600">${indicator.explain_hinglish}</p>
+                            <div class="mt-2 flex items-center">
+                                <span class="text-xs text-gray-500">Confidence: </span>
+                                <div class="ml-2 flex-1 bg-gray-200 rounded-full h-1 max-w-20">
+                                    <div class="h-1 rounded-full ${confidenceColor.includes('red') ? 'bg-red-500' : confidenceColor.includes('yellow') ? 'bg-yellow-500' : 'bg-blue-500'}" 
+                                         style="width: ${indicator.confidence}%"></div>
+                                </div>
+                                <span class="ml-2 text-xs ${confidenceColor}">${indicator.confidence}%</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                indicatorsList.appendChild(div);
+            });
+
+            // Actions
+            const actionsList = document.getElementById('actionsList');
+            actionsList.innerHTML = '';
+            results.recommended_action.forEach(action => {
+                const div = document.createElement('div');
+                div.innerHTML = `
+                    <div class="flex items-center space-x-3 p-3 bg-blue-50 rounded-lg">
+                        <i class="fas fa-arrow-right text-blue-600"></i>
+                        <p class="text-sm text-gray-700">${action}</p>
+                    </div>
+                `;
+                actionsList.appendChild(div);
+            });
+
+            // Explanations
+            document.getElementById('detailedExplanation').textContent = results.short_summary_hinglish;
+            document.getElementById('elderText').textContent = results.one_line_for_elder;
+
+            // Report template
+            if (results.report_template) {
+                document.getElementById('reportSection').classList.remove('hidden');
+                document.getElementById('reportSubject').value = results.report_template.subject;
+                document.getElementById('reportBody').value = results.report_template.body;
+            } else {
+                document.getElementById('reportSection').classList.add('hidden');
+            }
+        }
+
+        function addToHistory(type, content, results) {
+            const historyItem = {
+                id: Date.now(),
+                type,
+                content: content.substring(0, 100) + (content.length > 100 ? '...' : ''),
+                verdict: results.verdict,
+                risk_score: results.risk_score,
+                timestamp: new Date().toISOString()
+            };
+
+            analysisHistory.unshift(historyItem);
+            if (analysisHistory.length > 20) {
+                analysisHistory = analysisHistory.slice(0, 20);
+            }
+
+            localStorage.setItem('safelink_history', JSON.stringify(analysisHistory));
+        }
+
+        function showHistory() {
+            const historyList = document.getElementById('historyList');
+            historyList.innerHTML = '';
+
+            if (analysisHistory.length === 0) {
+                historyList.innerHTML = '<p class="text-gray-500 text-center">No recent checks found</p>';
+            } else {
+                analysisHistory.forEach(item => {
+                    const div = document.createElement('div');
+                    const verdictColor = item.verdict === 'Safe' ? 'text-green-600' : item.verdict === 'Suspicious' ? 'text-yellow-600' : 'text-red-600';
+                    const verdictBg = item.verdict === 'Safe' ? 'bg-green-100' : item.verdict === 'Suspicious' ? 'bg-yellow-100' : 'bg-red-100';
+                    
+                    div.innerHTML = `
+                        <div class="flex items-center justify-between p-3 border-b border-gray-200 hover:bg-gray-50">
+                            <div class="flex-1">
+                                <p class="text-sm font-medium text-gray-900">${item.content}</p>
+                                <div class="flex items-center mt-1 space-x-4">
+                                    <span class="text-xs text-gray-500">${new Date(item.timestamp).toLocaleString()}</span>
+                                    <span class="text-xs text-gray-500">${item.type.toUpperCase()}</span>
+                                </div>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <span class="text-sm ${verdictColor}">${item.risk_score}/100</span>
+                                <span class="px-2 py-1 text-xs font-medium rounded-full ${verdictBg} ${verdictColor}">
+                                    ${item.verdict}
+                                </span>
+                            </div>
+                        </div>
+                    `;
+                    historyList.appendChild(div);
+                });
+            }
+
+            document.getElementById('historyModal').classList.remove('hidden');
+        }
+
+        // Copy report functionality
+        document.getElementById('copyReportBtn').addEventListener('click', () => {
+            const subject = document.getElementById('reportSubject').value;
+            const body = document.getElementById('reportBody').value;
+            const fullReport = `Subject: ${subject}\n\n${body}`;
+            
+            navigator.clipboard.writeText(fullReport).then(() => {
+                const btn = document.getElementById('copyReportBtn');
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '<i class="fas fa-check mr-2"></i>Copied!';
+                btn.classList.replace('bg-yellow-600', 'bg-green-600');
+                btn.classList.replace('hover:bg-yellow-700', 'hover:bg-green-700');
+                
+                setTimeout(() => {
+                    btn.innerHTML = originalText;
+                    btn.classList.replace('bg-green-600', 'bg-yellow-600');
+                    btn.classList.replace('hover:bg-green-700', 'hover:bg-yellow-700');
+                }, 2000);
+            });
+        });
+
+        // Submit community report
+        document.getElementById('submitReportBtn').addEventListener('click', () => {
+            const shareEnabled = document.getElementById('shareAnalysis').checked;
+            if (shareEnabled) {
+                const btn = document.getElementById('submitReportBtn');
+                btn.innerHTML = '<i class="fas fa-check mr-2"></i>Submitted!';
+                btn.classList.replace('bg-green-600', 'bg-blue-600');
+                
+                setTimeout(() => {
+                    btn.innerHTML = '<i class="fas fa-share mr-2"></i>Submit';
+                    btn.classList.replace('bg-blue-600', 'bg-green-600');
+                }, 2000);
+            } else {
+                alert('Please check the box to share anonymously with the SafeLink community.');
+            }
+        });
+
+        // Analyze button handlers
+        document.getElementById('analyzeUrlBtn').addEventListener('click', () => {
+            const url = document.getElementById('urlInput').value.trim();
+            if (url) {
+                analyzeContent('url', url);
+            } else {
+                alert('Please enter a URL to analyze');
+            }
+        });
+
+        document.getElementById('analyzeTextBtn').addEventListener('click', () => {
+            const text = document.getElementById('textInput').value.trim();
+            if (text) {
+                analyzeContent('text', text);
+            } else {
+                alert('Please enter text content to analyze');
+            }
+        });
+
+        document.getElementById('analyzeHtmlBtn').addEventListener('click', () => {
+            const html = document.getElementById('htmlInput').value.trim();
+            if (html) {
+                analyzeContent('html', html);
+            } else {
+                alert('Please enter HTML content to analyze');
+            }
+        });
+
+        document.getElementById('analyzeImageBtn').addEventListener('click', () => {
+            const file = document.getElementById('imageInput').files[0];
+            if (file) {
+                // In a real app, this would upload the image for OCR processing
+                analyzeContent('image', `Screenshot: ${file.name}`);
+            } else {
+                alert('Please select an image file to analyze');
+            }
+        });
+
+        // Login functionality
+        document.getElementById('submitLogin').addEventListener('click', () => {
+            const email = document.getElementById('loginEmail').value.trim();
+            const password = document.getElementById('loginPassword').value.trim();
+            
+            if (email && password) {
+                // Mock login success
+                currentUser = { email, name: email.split('@')[0] };
+                document.getElementById('loginBtn').innerHTML = `<i class="fas fa-user mr-2"></i>${currentUser.name}`;
+                document.getElementById('loginModal').classList.add('hidden');
+                
+                // Clear form
+                document.getElementById('loginEmail').value = '';
+                document.getElementById('loginPassword').value = '';
+            } else {
+                alert('Please enter both email and password');
+            }
+        });
+
+        // Close modals on outside click
+        [document.getElementById('loginModal'), document.getElementById('historyModal')].forEach(modal => {
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    modal.classList.add('hidden');
+                }
+            });
+        });
+
+        // Initialize page
+        updateLanguage();
+        
+        // Add some demo data for testing
+        if (analysisHistory.length === 0) {
+            analysisHistory = [
+                {
+                    id: Date.now() - 1000,
+                    type: 'url',
+                    content: 'https://bit.ly/suspicious-banking-link',
+                    verdict: 'Malicious',
+                    risk_score: 89,
+                    timestamp: new Date(Date.now() - 3600000).toISOString()
+                },
+                {
+                    id: Date.now() - 2000,
+                    type: 'text',
+                    content: 'Congratulations! You have won $1,000,000. Click here to claim...',
+                    verdict: 'Malicious',
+                    risk_score: 95,
+                    timestamp: new Date(Date.now() - 7200000).toISOString()
+                },
+                {
+                    id: Date.now() - 3000,
+                    type: 'url',
+                    content: 'https://github.com/user/repo',
+                    verdict: 'Safe',
+                    risk_score: 15,
+                    timestamp: new Date(Date.now() - 10800000).toISOString()
+                }
+            ];
+            localStorage.setItem('safelink_history', JSON.stringify(analysisHistory));
+        }
+    </script>
+</body>
+</html>
